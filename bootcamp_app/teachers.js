@@ -11,17 +11,19 @@ const pool = new Pool({
 // The postgreSQL is the server and the back end JS (node) is our client
 
 
-
-
-pool.query(`
+const cohortName = process.argv[2];
+const values = [`%${cohortName}%`];
+const queryString = `
 SELECT DISTINCT teachers.name AS teacher, cohorts.name AS cohort 
 FROM teachers
 JOIN assistance_requests ON teachers.id = teacher_id
 JOIN students ON students.id = assistance_requests.student_id
 JOIN cohorts ON students.cohort_id = cohorts.id
-WHERE cohorts.name = '${process.argv[2] || 'JUL02'}'
+WHERE cohorts.name LIKE $1
 ORDER BY teacher;
-`)
+`;
+
+pool.query(queryString, values)
 .then(res => {
   //console.log(res.rows);
   res.rows.forEach(row => {
